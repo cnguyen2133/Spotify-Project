@@ -1,16 +1,19 @@
 import spotipy
+import os
+from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyOAuth
-import json
-playlist_id = "2LjXB8BWlV4mTktJAGhIhM"
-CLIENT_ID = "ef343b8adee34ec8b498ad31f12cf0cb"
-CLIENT_SECRET = "c31210f5fed44ad2ab2e9cde0994d0c9"
-REDIRECTED_URI = "http://127.0.0.1:8080/"
+load_dotenv()
 
-new_music_playlist = "44pxs36DWyYol10pUJSMOJ"
+playlist_id = os.environ.get("playlist_id")
+CLIENT_ID = os.environ.get("CLIENT_ID")
+CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
+REDIRECTED_URI = os.environ.get("REDIRECTED_URI")
+
+new_music_playlist = os.environ.get("new_music_playlist")
 scope = "playlist-modify-private user-library-modify user-library-read"
-username= "calvin2nguyen"
-new_music_kpop = "37i9dQZF1DXe5W6diBL5N4"
-rnb_kpop = "37i9dQZF1DX089MWxS7QW5"
+username= os.environ.get("username")
+new_music_kpop = os.environ.get("new_music_kpop")
+rnb_kpop = os.environ.get("rnb_kpop")
 token =SpotifyOAuth(scope=scope,username=username,client_id=CLIENT_ID,client_secret=CLIENT_SECRET,redirect_uri=REDIRECTED_URI)
 sp = spotipy.Spotify(auth_manager=token)
 
@@ -32,7 +35,7 @@ duplicates_tracks = []
 def grabUri(picked_playlist):
     results = sp.user_playlist_tracks(user=username,playlist_id=picked_playlist)
     tracks = results["items"]
-    print(results["next"])
+
     
     if results["next"]:
         while results["next"]:
@@ -46,28 +49,16 @@ def grabUri(picked_playlist):
                 new_tracks.append(tracks[i]["track"]["uri"])
         
         
-
-
-    
 def new_music_added():
     grabUri(rnb_kpop)
     grabUri(new_music_kpop)
     delete_old_tracks(new_tracks)
-    
-    print(len(new_tracks))
+
     if len(new_tracks) != 0: 
     
         add_to_playlist(new_music_playlist,new_tracks)
 
-def delete_old_tracks(tracks):
-        while tracks:
-            sp.user_playlist_remove_all_occurrences_of_tracks(user=username,playlist_id=new_music_playlist,tracks=tracks[:100])
-            tracks = tracks[100:]
-    
-
-
-def update_myplaylist():
-    
+def update_myplaylist():    
     try:
         saved_tracks = sp.current_user_saved_tracks()
         for i in range(len(saved_tracks["items"])):
@@ -80,10 +71,6 @@ def update_myplaylist():
         
         duplicates = list(set(liked_tracks).intersection(set(current_tracks)))
         no_dupes = list(set(current_tracks).symmetric_difference(liked_tracks))
-        print(no_dupes)
-       
-        
-        print(liked_tracks)
         
         if len(duplicates) != 0:
             sp.current_user_saved_tracks_delete(tracks=duplicates)
@@ -103,7 +90,11 @@ def add_to_playlist(playlist,tracks):
         print("asdffdsafdsafdsa")
         sp.user_playlist_add_tracks(user=username,playlist_id=playlist,tracks=tracks[:100])
         tracks = tracks[100:]
-   
+
+def delete_old_tracks(tracks):
+        while tracks:
+            sp.user_playlist_remove_all_occurrences_of_tracks(user=username,playlist_id=new_music_playlist,tracks=tracks[:100])
+            tracks = tracks[100:]   
          
         
         
